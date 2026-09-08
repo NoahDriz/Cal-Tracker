@@ -1,10 +1,12 @@
 import streamlit as st
 import json
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 st.title("Calorie Tracker")
 
-today = str(date.today())
+central = ZoneInfo("America/Chicago")
+today = str(datetime.now(central).date())
 
 # Load history once, and keep it in session_state so we don't
 # re-read the file on every single rerun.
@@ -66,3 +68,21 @@ st.write(f"Calories: {total_Calories}")
 st.write(f"Protein: {total_Protien}")
 st.write(f"Fat: {total_Fat}")
 st.write(f"Carbs: {total_Carbs}")
+
+st.divider()
+st.subheader("View a Past Day")
+
+past_dates = sorted(st.session_state.history.keys(), reverse=True)
+selected_date = st.selectbox("Choose a date:", past_dates)
+
+if selected_date:
+    st.write(f"**Log for {selected_date}:**")
+    for entry in st.session_state.history[selected_date]:
+        st.write(f"{entry['Foods']} — {entry['Calories']} cal, {entry['Protien']}g protein, {entry['Fat']}g fat, {entry['Carbs']}g carbs")
+
+    day_total_cal = sum(entry["Calories"] for entry in st.session_state.history[selected_date])
+    day_total_prot = sum(entry["Protien"] for entry in st.session_state.history[selected_date])
+    day_total_fat = sum(entry["Fat"] for entry in st.session_state.history[selected_date])
+    day_total_carb = sum(entry["Carbs"] for entry in st.session_state.history[selected_date])
+
+    st.write(f"Totals — Calories: {day_total_cal}, Protein: {day_total_prot}, Fat: {day_total_fat}, Carbs: {day_total_carb}")
